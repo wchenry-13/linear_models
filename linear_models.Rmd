@@ -90,3 +90,44 @@ nyc_airbnb |>
   ggplot(aes(x = borough, y = resid)) + geom_violin()
 ```
 
+```{r}
+nyc_airbnb |> 
+  modelr::add_residuals(fit) |> 
+  ggplot(aes(x = stars, y = resid)) + geom_point()
+```
+
+## Hypothesis testing 
+
+```{r}
+## fitting a null and alt model 
+fit_null = lm(price ~ stars + borough, data = nyc_airbnb)
+fit_alt = lm(price ~ stars + borough + room_type, data = nyc_airbnb)
+```
+
+```{r}
+anova(fit_null, fit_alt) |> 
+  broom::tidy()
+```
+
+## Borough-level differences 
+
+```{r}
+fit = 
+  nyc_airbnb |> 
+  lm(price ~ stars * borough + room_type * borough, data = _)
+
+fit |> 
+  broom::tidy()
+```
+
+```{r}
+airbnb_lm = function(df) {
+  lm(price ~ stars + room_type, data = df)
+}
+nyc_airbnb |> 
+  nest(df = -borough) |> 
+  mutate(
+    models = map(df, airbnb_lm)
+  )
+```
+

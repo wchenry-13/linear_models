@@ -33,8 +33,10 @@ nyc_airbnb =
 
 ```{r}
 fit = lm(price ~ stars + borough, data = nyc_airbnb)
-
+## can print the 'fit' to see if its what you want 
+## more options for looking at 'fit' under "Tidying output"
 ```
+
 
 ```{r}
 nyc_airbnb = 
@@ -44,5 +46,47 @@ nyc_airbnb =
     room_type = fct_infreq(room_type))
 
 fit = lm(price ~ stars + borough, data = nyc_airbnb)
+```
+
+## Tidying the output 
+
+```{r}
+#summary(fit)
+#summary(fit)$coef
+#coef(fit)
+#fitted.values(fit)
+
+## commenting these out bc it makes the knit cleaner, these commands work and knit properly when uncommented :)
+
+fit |> 
+  broom::glance()
+
+
+fit |> 
+  broom::tidy()
+```
+
+```{r}
+fit |> 
+  broom::tidy() |> 
+  select(term, estimate, p.value) |> 
+  mutate(term = str_replace(term, "^borough", "Borough: ")) |> 
+  knitr::kable(digits = 3)
+```
+
+## Diagnostics 
+
+```{r}
+modelr::add_residuals(nyc_airbnb, fit)
+```
+
+```{r}
+modelr::add_predictions(nyc_airbnb, fit)
+```
+
+```{r}
+nyc_airbnb |> 
+  modelr::add_residuals(fit) |> 
+  ggplot(aes(x = borough, y = resid)) + geom_violin()
 ```
 
